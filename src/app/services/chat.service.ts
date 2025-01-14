@@ -70,16 +70,37 @@ export class ChatService {
   constructor() {
     this.userSubscription = this.user$.subscribe((aUser: User | null) => {
         this.currentUser = aUser;
+        console.log('Current user updated:', aUser);
     });
+    
+    this.provider.addScope('profile');
+    this.provider.addScope('email');
   }
 
   // Login Friendly Chat.
   login() {
-    signInWithPopup(this.auth, this.provider).then((result) => {
+    console.log('Login attempt started');
+    signInWithPopup(this.auth, this.provider)
+      .then((result) => {
+        console.log('Login successful', result);
         const credential = GoogleAuthProvider.credentialFromResult(result);
         this.router.navigate(['/', 'chat']);
         return credential;
     })
+    .catch((error) => {
+        console.error('Login error:', error);
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const email = error.customData?.email;
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        
+        console.error({
+            errorCode,
+            errorMessage,
+            email,
+            credential
+        });
+    });
   }
 
   // Logout of Friendly Chat.
