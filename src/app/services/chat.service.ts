@@ -178,21 +178,31 @@ export class ChatService {
     try {
       // 1 - Add a message with a loading icon that will get updated with the shared image.
       const messageRef = await this.addMessage(null, this.LOADING_IMAGE_URL);
-  
+      
+      if (!messageRef) {
+        console.error('Failed to create message reference');
+        return;
+      }
+
       // 2 - Upload the image to Cloud Storage.
-      const filePath = `${this.auth.currentUser?.uid}/${file.name}`;
+      const filePath = `${this.auth.currentUser?.uid}/images/${new Date().getTime()}_${file.name}`;
       const newImageRef = ref(this.storage, filePath);
+      
+      console.log('Starting file upload...', filePath);
       const fileSnapshot = await uploadBytesResumable(newImageRef, file);
-  
+      console.log('File uploaded successfully', fileSnapshot);
+
       // 3 - Generate a public URL for the file.
       const publicImageUrl = await getDownloadURL(newImageRef);
-  
+      console.log('Got public URL:', publicImageUrl);
+
       // 4 - Update the chat message placeholder with the image's URL.
-      messageRef ?
       await updateDoc(messageRef, {
         imageUrl: publicImageUrl,
         storageUri: fileSnapshot.metadata.fullPath
-      }): null;
+      });
+      
+      console.log('Message updated with image URL');
     } catch (error) {
       console.error('There was an error uploading a file to Cloud Storage:', error);
     }
