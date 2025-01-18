@@ -176,6 +176,13 @@ export class ChatService {
   // This first saves the image in Firebase storage.
   saveImageMessage = async(file: any) => {
     try {
+      console.log('Starting saveImageMessage with file:', file);
+      
+      if (!file) {
+        console.error('No file provided to saveImageMessage');
+        return;
+      }
+
       // 1 - Add a message with a loading icon that will get updated with the shared image.
       const messageRef = await this.addMessage(null, this.LOADING_IMAGE_URL);
       
@@ -205,6 +212,7 @@ export class ChatService {
       console.log('Message updated with image URL');
     } catch (error) {
       console.error('There was an error uploading a file to Cloud Storage:', error);
+      throw error;
     }
   }
 
